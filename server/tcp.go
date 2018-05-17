@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"net"
+
+	"github.com/union3/uniq/internal/turbo"
 )
 
 type tcpServer struct {
@@ -19,4 +21,20 @@ func (s *tcpServer) Handle(clientConn net.Conn) {
 	}
 	protocolMagic := string(buf)
 	fmt.Println("info", "TCP: protocol magic ", protocolMagic, "client ", clientConn.RemoteAddr())
+	var proto turbo.Protocol
+	switch protocolMagic {
+	case "V1":
+		proto = &protocolV1{
+			ctx: s.ctx,
+		}
+	default:
+		clientConn.Close()
+		fmt.Println("info", "TCP: bad protocol magic ", protocolMagic, "client ", clientConn.RemoteAddr())
+		return
+	}
+	err = proto.Loop(clientConn)
+	if err != nil {
+		fmt.Println("error", " client ", clientConn.RemoteAddr(), err.Error())
+		return
+	}
 }
