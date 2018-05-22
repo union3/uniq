@@ -9,6 +9,7 @@ import (
 )
 
 var byteSpace = []byte(" ")
+var byteNewLine = []byte("\n")
 
 type Command struct {
 	Name   []byte
